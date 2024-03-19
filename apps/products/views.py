@@ -129,16 +129,20 @@ class view_product(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, pk):
+    def put(self, request):
         staff= request.GET["staff"]
-        staff = Staff.objects.get(pk = staff)
-        product = Product.objects.get(pk=pk)
+        price = request.data["price"]
+        print(price)
+        product= request.GET["product"]
+        staff = Staff.objects.get(id = staff)
+        product = Product.objects.get(id = product)
+        print(product.price)
 
-        if product.price != request.data("price") :
+        if product.price != price :
             subject = 'Thank you for registering to our site'
             message = ' it  means a world to us '
             email_from = settings.EMAIL_HOST_USER
-            recipient_list = ['yonelacv30@gmail.com',]
+            recipient_list = [staff.email,]
             send_mail( subject, message, email_from, recipient_list )
         else:
             None

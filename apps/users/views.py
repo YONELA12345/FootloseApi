@@ -81,11 +81,7 @@ class auth_register_staff_viewset(ObtainAuthToken):
             print("Se guardo")
 
             serializer=staff_serializer(
-                data=json.loads(json.dumps({
-                    "names":request.data['names'],
-                    "lastnames":request.data['lastnames'],
-                    "document_number":request.data['document_number']
-                })),
+                data=request.data,
                 context={
                     'user':user,
                     "role":request.data['role'],

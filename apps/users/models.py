@@ -39,6 +39,11 @@ class Staff(models.Model):
         null=True,
     )
 
+    email=models.CharField(
+        max_length=250,
+        null=True
+    )
+
     user=models.OneToOneField(
         User,
         on_delete=models.CASCADE,
