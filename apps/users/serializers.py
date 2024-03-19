@@ -31,24 +31,16 @@ class role_serializer(serializers.ModelSerializer):
         return instance
     
 class onget_role_serializer(serializers.ModelSerializer):
-    users = serializers.SerializerMethodField()
     class Meta:
         model=StaffRole
         fields=[
             "id",
             "name",
             "permissions",
-            "is_default",
             "deleted",
             "created_date",
             "created_by",
-            "users",
         ]
-
-    def get_users(self, instance):
-        return(
-                Staff.objects.filter(role=instance.id).count()
-        )
 
 
 class staff_serializer(serializers.ModelSerializer):
@@ -74,7 +66,7 @@ class staff_serializer(serializers.ModelSerializer):
         return instance
 
 class  onget_staff_serializer(serializers.ModelSerializer):
-    role=serializers.SerializerMethodField()
+    role=onget_role_serializer('role')
 
 
     class Meta:
@@ -82,4 +74,6 @@ class  onget_staff_serializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_role(self, instance):
-        return role_serializer(StaffRole.objects.using(self.context.get("country")).get(id=instance.role.id)).data
+        return(
+                onget_role_serializer(StaffRole.objects.filter(pk=instance.role).count())
+        )

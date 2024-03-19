@@ -1,4 +1,5 @@
 from rest_framework.authtoken.models import Token  # Asegúrate de importar Token desde DRF
+from django.db.models           import Q
 
 from django.shortcuts import render
 from django.contrib.auth.models import User
@@ -108,11 +109,67 @@ class party_role_viewset(APIView):
 
     def get(self, request):
         f = Q()
-        if 'enabled' in request.GET:
-            f &= Q(deleted = False)
+        if 'role' in request.GET:
+            f &= Q(pk = request.GET['role'])
         return Response(
             onget_role_serializer(
                 StaffRole.objects.filter(f).order_by('-id'),
+                many = True
+            ).data
+        )
+
+    def post(self, request):
+        serializer = role_serializer(
+            data=request.data,
+        )
+
+        print(request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            print(serializer.data)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        role = StaffRole.objects.get(id=request.data["id"])
+        serializer = role_serializer(
+            role,
+            data=request.data,
+            
+        )
+
+        if(serializer.is_valid()):
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        role = StaffRole.objects.get(id=request.data["id"])
+        role.deleted = not role.deleted
+        role.save(update_fields=['deleted'])
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+class party_staff_viewset(APIView):
+
+    # authentication_classes=[TokenAuthentication]
+    # permission_classes=[IsAuthenticated]
+
+    authentication_classes=[]
+    permission_classes=[]
+
+    def get(self, request):
+        f = Q()
+        if 'staff' in request.GET:
+            f &= Q(pk = request.GET['staff'])
+        return Response(
+            onget_staff_serializer(
+                Staff.objects.filter(f).order_by('-id'),
                 many = True
             ).data
         )

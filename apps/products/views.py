@@ -1,5 +1,6 @@
-from django.shortcuts import render
-
+from django.shortcuts import redirect, render
+from django.core.mail import send_mail
+from django.conf import settings
 from apps.products.models import Brand, Color, ModelP, Product, Size
 from apps.products.serializers import BrandSerializer, ColorSerializer, ModelPSerializer, ProductSerializer, SizeSerializer
 from rest_framework.response import Response
@@ -7,6 +8,8 @@ from rest_framework.views import APIView
 
 from rest_framework.response import Response
 from rest_framework import status
+
+from apps.users.models import Staff
 # Create your views here.
 
 class view_brand(APIView):
@@ -127,8 +130,20 @@ class view_product(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
-        size = Product.objects.get(pk=pk)
-        serializer = ProductSerializer(size, data=request.data)
+        staff= request.GET["staff"]
+        staff = Staff.objects.get(pk = staff)
+        product = Product.objects.get(pk=pk)
+
+        if product.price != request.data("price") :
+            subject = 'Thank you for registering to our site'
+            message = ' it  means a world to us '
+            email_from = settings.EMAIL_HOST_USER
+            recipient_list = ['yonelacv30@gmail.com',]
+            send_mail( subject, message, email_from, recipient_list )
+        else:
+            None
+
+        serializer = ProductSerializer(product, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -138,3 +153,12 @@ class view_product(APIView):
         modelp= Product.objects.get(pk=pk)
         modelp.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class email_view(APIView):
+    def get(self, request):
+        subject = 'Thank you for registering to our site'
+        message = ' it  means a world to us '
+        email_from = settings.EMAIL_HOST_USER
+        recipient_list = ['yonelacv30@gmail.com',]
+        send_mail( subject, message, email_from, recipient_list )
+        return Response(status=status.HTTP_200_OK)
