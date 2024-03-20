@@ -1,14 +1,14 @@
 from django.core.mail import send_mail
 from django.conf import settings
 from apps.products.models import Brand, Color, ModelP, Product, Size
-from apps.products.serializers import BrandSerializer, ColorSerializer, ImageSerializer, ModelPSerializer, ProductSerializer, SizeSerializer
+from apps.products.serializers import BrandSerializer, ColorSerializer, ImageSerializer, ModelPSerializer, ProductSerializer, SizeSerializer, onget_product_serializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework import status
 
-from apps.users.models import Staff
+from apps.users.models import Staff, StaffRole
 # Create your views here.
 
 class view_brand(APIView):
@@ -190,9 +190,15 @@ class view_size(APIView):
 
 class view_product(APIView):
     def get(self, request):
-        product = Product.objects.all()
-        serializer = ProductSerializer(product, many=True)
-        return Response(serializer.data)
+        f = Q()
+        if 'product' in request.GET:
+            f &= Q(id = request.GET['product'])
+        return Response(
+            onget_product_serializer(
+                Product.objects.filter(f).order_by('-id'),
+                many = True
+            ).data
+        )
 
     def post(self, request):
         staff = request.GET["staff"]

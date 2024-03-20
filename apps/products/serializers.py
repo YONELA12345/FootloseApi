@@ -96,6 +96,17 @@ class ProductSerializer(serializers.ModelSerializer):
 
         instance.save(update_fields=validated_data.keys())
         return instance
+    
+
+class onget_product_serializer(serializers.ModelSerializer):
+    brand = BrandSerializer()
+    color = ColorSerializer()
+    modelp = ModelPSerializer()
+    size = SizeSerializer()
+
+    class Meta:
+        model = Product
+        fields = "__all__"
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
