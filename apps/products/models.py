@@ -1,4 +1,8 @@
+from sysconfig import get_path
 from django.db import models
+from utils.manage_media import get_path, manage_image
+from utils.constants.media import IMAGE
+
 
 class Brand(models.Model):
     name = models.CharField(max_length=100)
@@ -76,6 +80,11 @@ class Product(models.Model):
         blank = True,
         null = True,
         default=0)
+    image = models.ImageField(
+        upload_to=get_path(IMAGE, "PRODUCT"), 
+        null=True, 
+        blank=True
+    )
     stock = models.PositiveIntegerField()
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     color = models.ForeignKey(Color, on_delete=models.CASCADE)
@@ -94,5 +103,11 @@ class Product(models.Model):
         null=True,
         default=False
     )
+
+    def save(self, *args, **kwargs):
+        if self.image:
+            self.image=manage_image(self.image, "PHOTO_")
+
+        super(Product, self).save(*args, **kwargs)
 
 

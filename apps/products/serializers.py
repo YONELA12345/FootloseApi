@@ -96,3 +96,17 @@ class ProductSerializer(serializers.ModelSerializer):
 
         instance.save(update_fields=validated_data.keys())
         return instance
+
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model   = Product
+        fields  = ['image']
+
+
+    def update(self, instance, validated_data):
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        instance.save(update_fields=validated_data.keys())
+        return instance

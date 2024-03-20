@@ -1,7 +1,7 @@
 from django.core.mail import send_mail
 from django.conf import settings
 from apps.products.models import Brand, Color, ModelP, Product, Size
-from apps.products.serializers import BrandSerializer, ColorSerializer, ModelPSerializer, ProductSerializer, SizeSerializer
+from apps.products.serializers import BrandSerializer, ColorSerializer, ImageSerializer, ModelPSerializer, ProductSerializer, SizeSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
@@ -245,4 +245,16 @@ class view_product(APIView):
         
         else:
             return Response({"message": "Usted no tiene permisos de administrador."}, status=status.HTTP_401_UNAUTHORIZED)
+
+class view_image(APIView):
+
+    def put(self, request):
+        product= request.GET["product"]
+        product = Product.objects.get(id = product)
+
+        serializer = ImageSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

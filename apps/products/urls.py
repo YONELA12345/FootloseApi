@@ -1,7 +1,7 @@
 from django import views
 from django.urls import path, re_path
 
-from apps.products.views import view_brand, view_color, view_modelp, view_product, view_size
+from apps.products.views import view_brand, view_color, view_image, view_modelp, view_product, view_size
 
 
 urlpatterns  = [
@@ -10,4 +10,6 @@ urlpatterns  = [
     path('modelp/', view_modelp.as_view()),
     path('size/', view_size.as_view()),
     path('product/', view_product.as_view()),
+    path('image/', view_image.as_view()),
+
 ]

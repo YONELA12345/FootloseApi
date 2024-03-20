@@ -131,10 +131,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:3000',
-#     'https://example.com',
-# ]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'https://example.com',
+]
 
 #Service Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
