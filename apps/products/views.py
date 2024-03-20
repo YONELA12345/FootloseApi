@@ -58,9 +58,15 @@ class view_brand(APIView):
 
 class view_color(APIView):
     def get(self, request):
-        color = Color.objects.all()
-        serializer = ColorSerializer(color, many=True)
-        return Response(serializer.data)
+        f = Q()
+        if 'color' in request.GET:
+            f &= Q(id = request.GET['color'])
+        return Response(
+            ColorSerializer(
+                Color.objects.filter(f).order_by('-id'),
+                many = True
+            ).data
+        )
 
     def post(self, request):
         staff = request.GET["staff"]
@@ -102,10 +108,15 @@ class view_color(APIView):
 
 class view_modelp(APIView):
     def get(self, request):
-        modelp = ModelP.objects.all()
-        serializer = ModelPSerializer(modelp, many=True)
-        return Response(serializer.data)
-
+        f = Q()
+        if 'modelp' in request.GET:
+            f &= Q(id = request.GET['modelp'])
+        return Response(
+            ModelPSerializer(
+                ModelP.objects.filter(f).order_by('-id'),
+                many = True
+            ).data
+        )
     def post(self, request):
         staff = request.GET["staff"]
         user = Staff.objects.get(id=staff)
@@ -146,9 +157,15 @@ class view_modelp(APIView):
 
 class view_size(APIView):
     def get(self, request):
-        size = Size.objects.all()
-        serializer = SizeSerializer(size, many=True)
-        return Response(serializer.data)
+        f = Q()
+        if 'size' in request.GET:
+            f &= Q(id = request.GET['size'])
+        return Response(
+            SizeSerializer(
+                Size.objects.filter(f).order_by('-id'),
+                many = True
+            ).data
+        )
 
     def post(self, request):
         staff = request.GET["staff"]
