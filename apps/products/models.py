@@ -109,5 +109,11 @@ class Product(models.Model):
             self.image=manage_image(self.image, "PHOTO_")
 
         super(Product, self).save(*args, **kwargs)
+    
+    def get_image_url(self):
+        if self.image:
+            return self.image.url
+        else:
+            return None
 
 
