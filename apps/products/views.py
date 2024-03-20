@@ -280,4 +280,15 @@ class view_image(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        f = Q()
+        if 'product' in request.GET:
+            f &= Q(id = request.GET['product'])
+        return Response(
+            onget_product_serializer(
+                Product.objects.filter(f).order_by('-id'),
+                many = True
+            ).data
+        )
 
