@@ -121,9 +121,3 @@ class ImageSerializer(serializers.ModelSerializer):
 
         instance.save(update_fields=validated_data.keys())
         return instance
-    
-    def get_image_url(self, obj):
-        # Obtén la URL completa de la imagen
-        if obj.image:
-            return obj.image.url
-        return None
