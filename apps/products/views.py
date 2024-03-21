@@ -1,3 +1,4 @@
+from urllib import request
 from django.core.mail import send_mail
 from django.conf import settings
 from apps.products.models import Brand, Color, ModelP, Product, Size
@@ -210,6 +211,7 @@ class view_size(APIView):
             return Response({"message": "Usted no tiene permisos de administrador."}, status=status.HTTP_401_UNAUTHORIZED)
 
 class view_product(APIView):
+
     def get(self, request):
         f = Q()
         if 'product' in request.GET:
@@ -258,20 +260,21 @@ class view_product(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
-        product= request.GET["product"]
-        staff = request.GET["staff"]
-        product= Product.objects.get(id=product)
-        staff =  Staff.objects.get(id=staff)
-        # product.delete()
-        if staff.role.name in ["administrador", "supervisor"]:
-            product.deleted  = not product.deleted
+            product = request.GET.get("product")
+            staff = request.GET.get("staff")
 
-            product.save(update_fields=['deleted'])
+            try:
+                product = Product.objects.get(id=product)
+                staff = Staff.objects.get(id=staff)
+            except (Product.DoesNotExist, Staff.DoesNotExist):
+                return Response({"message": "Producto o personal no encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
-            return Response({"message": "Producto eliminado exitosamente."}, status=status.HTTP_202_OK)
-        
-        else:
-            return Response({"message": "Usted no tiene permisos de administrador."}, status=status.HTTP_401_UNAUTHORIZED)
+            if staff.role.name in ["administrador", "supervisor"]:
+                product.deleted = not product.deleted
+                product.save()
+                return Response({"message": "Producto eliminado exitosamente."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Usted no tiene permisos de administrador."}, status=status.HTTP_401_UNAUTHORIZED)
 
 class view_image(APIView):
 
@@ -298,7 +301,32 @@ class view_image(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+
+class view_filter_products(APIView):
     
+    def get(self, request):
+
+        f = Q(deleted=False)
+        if 'brand' in request.GET:
+            f &= Q(brand=request.GET['brand'])
+        if 'modelp' in request.GET:
+            f &= Q(modelp=request.GET['business'])
+        if 'color' in request.GET:
+            f &= Q(color=request.GET['color'])
+        if 'size' in request.GET:
+            f &= Q(size=  request.GET['size'])
+        if 'search' in request.GET:
+            print(request.GET['search'])
+            f &= Q(name__icontains=request.GET['search'])
+
+
+
+        return Response(
+            onget_product_serializer(
+                Product.objects.filter(f).order_by('-id'),
+                many = True
+            ).data
+        )
 
 def show_image(request, image_path):
     # Construye la ruta completa del archivo de imagen
