@@ -7,6 +7,10 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework import status
+from django.http import HttpResponseNotFound
+from django.http import HttpResponse
+from django.conf import settings
+import os
 
 from apps.users.models import Staff, StaffRole
 # Create your views here.
@@ -271,6 +275,18 @@ class view_product(APIView):
 
 class view_image(APIView):
 
+    def get(self, request):
+        product_id = request.GET.get("product")
+        if product_id:
+            try:
+                product = Product.objects.get(id=product_id)
+                serializer = ImageSerializer(product)
+                return Response(serializer.data)
+            except Product.DoesNotExist:
+                return Response({"error": "Producto no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"error": "Se requiere el parámetro 'product' en la solicitud"}, status=status.HTTP_400_BAD_REQUEST)
+        
     def put(self, request):
         product= request.GET["product"]
         product = Product.objects.get(id = product)
@@ -281,14 +297,32 @@ class view_image(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def get(self, request):
-        f = Q()
-        if 'product' in request.GET:
-            f &= Q(id = request.GET['product'])
-        return Response(
-            onget_product_serializer(
-                Product.objects.filter(f).order_by('-id'),
-                many = True
-            ).data
-        )
+
+    
+
+def show_image(request, image_path):
+    # Construye la ruta completa del archivo de imagen
+    full_path = os.path.join(settings.MEDIA_ROOT, image_path)
+
+    try:
+        # Abre el archivo de imagen y lo lee en la respuesta HTTP
+        with open(full_path, 'rb') as f:
+            return HttpResponse(f.read(), content_type='image/png')
+    except FileNotFoundError:
+        return HttpResponse(status=404)
+    
+
+def get_product_image(request, product_id):
+    try:
+        product = Product.objects.get(pk=product_id)
+        image_path = product.image.path  # Ruta completa de la imagen
+
+        with open(image_path, 'rb') as f:
+            return HttpResponse(f.read(), content_type='image/png')
+
+    except Product.DoesNotExist:
+        return HttpResponseNotFound("La imagen del producto no se encontró")
+
+    except FileNotFoundError:
+        return HttpResponseNotFound("La imagen del producto no se encontró")
 
